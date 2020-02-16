@@ -71,6 +71,6 @@ public class Overworld : MonoBehaviour
     }
 
     public char[,] getGrid() {
-        return gridworld
+        return gridworld;
     }
 }

@@ -11,17 +11,20 @@ public class GameManager : MonoBehaviour
     public static List<Living> followers;
     public static CarTile car;
     // Add enum for object and elements
-    //TEST FOR PUSH
 
 
     // Start is called before the first frame update
     void Awake()
     {
         directions = new List<(int x, int y)>();
-        followers = new List<Living> { new Jay(playerStart.x, playerStart.y), new Follower(1, 0, false), new Follower(2, 0, false), new Follower(3, 0, false) };
+        followers = new List<Living> { 
+            new Jay(playerStart.x, playerStart.y), 
+            new Follower(1, 0, false), 
+            new Follower(2, 0, false), 
+            new Follower(3, 0, false) };
         grid = GameObject.Find("Overworld").GetComponent<Overworld>();
-        for (int i = 0; i < followers.Count; i++) {
-            
+        for (int i = followers.Count - 2; i >= 0; i--) {
+            directions.Add(followers[i].position);
         }
         car = new CarTile(3, 5);
     }
@@ -34,16 +37,20 @@ public class GameManager : MonoBehaviour
         {
             // Entering this branch assumes that move is valid.
 
-            char[,] currentGrid = grid.getGrid();
+            Tile[,] currentGrid = grid.getGrid();
             
             // Test if valid move
-            for (int i = 0; i < followers.Count; i++)
+            for (int i = 1; i < followers.Count; i++)
             {
-/*                (int x, int y) next = followers[i].Move(directions[directions.Count - i - 1]);
-*/              grid.Move(followers[i].position, directions[directions.Count - i - 1], 'f');
-                followers[i].position = directions[directions.Count - i - 1];
+                /* (int x, int y) next = followers[i].Move(directions[directions.Count - i - 1]);*/
+                // don't need to subtract index by 1 because start i at 1
+                grid.Move(followers[i].position, directions[directions.Count - i], 'f');
+                followers[i].position = directions[directions.Count - i];
+                print(followers[i].position);
 
             }
+            directions.Add(followers[0].position);
+            directions.RemoveAt(0);
 
             car.countDown();
             Debug.Log(car.countdown);
@@ -61,40 +68,42 @@ public class GameManager : MonoBehaviour
         Direction dir = Direction.None;
         float moveHorizontal = Input.GetAxis("Horizontal");
         float moveVertical = Input.GetAxis("Vertical");
-        (int x, int y) temp = followers[0].position;
+        (int x, int y) temp = followers[0].position;  // Jay's position
         if (Input.GetButtonDown("Vertical"))
         {
-            if (moveVertical < 0 && playerAt.x < grid.height - 1) // South
+            if (moveVertical < 0 && temp.x < grid.height - 1)  // South
             {
-                temp = (playerAt.x + 1, playerAt.y);
-                dir = Direction.South;
+                temp = (temp.x + 1, temp.y);
+                if (grid.TileOccupied(temp)) dir = Direction.South;
             }
-            else if (moveVertical > 0 && playerAt.x > 0) // North
+            else if (moveVertical > 0 && temp.x > 0)  // North
             {
-                temp = (playerAt.x - 1, playerAt.y);
-                dir = Direction.North;
+                temp = (temp.x - 1, temp.y);
+                if (grid.TileOccupied(temp)) dir = Direction.North;
             }
         }
         else if (Input.GetButtonDown("Horizontal"))
         {
-            if (moveHorizontal > 0 && playerAt.y < grid.width - 1) // East
+            if (moveHorizontal > 0 && temp.y < grid.width - 1)  // East
             {
-                temp = (playerAt.x, playerAt.y + 1);
-                dir = Direction.East;
+                temp = (temp.x, temp.y + 1);
+                if (grid.TileOccupied(temp)) dir = Direction.East;
             }
-            else if (moveHorizontal < 0 && playerAt.y > 0) // West
+            else if (moveHorizontal < 0 && temp.y > 0)  // West
             {
-                temp = (playerAt.x, playerAt.y - 1);
-                dir = Direction.West;
+                temp = (temp.x, temp.y - 1);
+                if (grid.TileOccupied(temp)) dir = Direction.West;
             }
         }
-        if (grid.Move(playerAt, temp, 'c'))
-        {
-            directions.Add(playerAt);
-            followers[0].position = temp;
 
+        if (grid.Move(followers[0].position, temp, 'c'))
+        {
+            followers[0].position = temp;
         }
+        print(string.Join(",", directions));
+        print(dir);
         return dir;
     }
+
 
 }

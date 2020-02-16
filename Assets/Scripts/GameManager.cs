@@ -10,6 +10,8 @@ public class GameManager : MonoBehaviour
     public static List<Living> followers;
     public static CarTile car;
     // Add enum for object and elements
+    //TEST FOR PUSH
+    
 
     // Start is called before the first frame update
     void Awake()
